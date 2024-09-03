@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Información del Navegador</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-image: url('nube2.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="text-center w-2/3">
+        <!-- Cuadro para el título -->
+        <div class="bg-red-50 p-4 rounded-lg shadow-md mb-8">
+            <h1 class="text-red-800 text-4xl font-bold">Información del Navegador</h1>
+        </div>
+
+        <!-- Cuadro que contiene la información -->
+        <div class="bg-red-50 text-red-950 p-8 rounded-lg shadow-md text-left mb-8">
+            <p class="text-xl mb-2"><strong>Fecha y hora:</strong> <span id="fechaHora"></span></p>
+            <p class="text-xl mb-2"><strong>Timezone:</strong> <span id="timezone"></span></p>
+            <p class="text-xl mb-2"><strong>Agente:</strong> <span id="agente"></span></p>
+            <p class="text-xl mb-2"><strong>Idioma Preferido:</strong> <span id="idioma"></span></p>
+            <p class="text-xl mb-2"><strong>Plataforma:</strong> <span id="plataforma"></span></p>
+            <p class="text-xl mb-2"><strong>Resolución de ventana:</strong> <span id="resolucion"></span></p>
+            <p class="text-xl"><strong>User:</strong> <span id="userId"></span></p>
+        </div>
+
+        <!-- Nuevo cuadro con botón Enviar -->
+        <div class="bg-red-50 p-8 rounded-lg shadow-md">
+            <button id="enviarBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-1/4">
+                Enviar
+            </button>
+            <button id="leerBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-1/4 ml-4">
+                Leer
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para mostrar los datos en tabla -->
+    <div id="modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+        <div class="bg-blue-50 p-10 rounded-lg shadow-lg w-full max-w-3xl overflow-x-auto">
+            <h2 class="text-blue-900 text-xl font-bold mb-4">Últimos 5 registros</h2>
+            <table class="table-auto w-full text-left">
+                <thead class="text-blue-500">
+                    <tr>
+                        <th class="px-4 py-2">Fecha y hora</th>
+                        <th class="px-4 py-2">User</th>
+                        <th class="px-4 py-2">Agente</th>
+                        <th class="px-4 py-2">Plataforma</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaRegistros">
+                    <!-- Aquí se insertarán las filas con los datos -->
+                </tbody>
+            </table>
+            <button id="cerrarModal" class="mt-4 bg-red-700 hover:bg-red-950 text-white font-bold py-2 px-4 rounded">
+                Cerrar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Funciones para gestionar cookies
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        function setCookie(name, value, days) {
+            const d = new Date();
+            d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+            let expires = `expires=${d.toUTCString()}`;
+            document.cookie = `${name}=${value}; ${expires}; path=/`;
+        }
+
+        // Verificar si existe la cookie "userId"
+        let userId = getCookie("userId");
+        if (userId) {
+            // Mostrar el valor de la cookie si existe
+            document.getElementById('userId').textContent = userId;
+        } else {
+            // Si no existe, pedir al usuario que ingrese su nombre
+            let userName = prompt("Por favor, ingresa tu nombre:");
+            if (userName) {
+                // Guardar el nombre en la cookie "userId" por 1 año
+                setCookie("userId", userName, 5);
+                // Mostrar el valor ingresado como "User:"
+                document.getElementById('userId').textContent = userName;
+            }
+        }
+
+        // Obtener y mostrar el timestamp en el momento de cargar la página
+        function actualizarFechaHora() {
+            const fechaHora = new Date().toLocaleString();
+            document.getElementById('fechaHora').textContent = fechaHora;
+        }
+
+        actualizarFechaHora();
+
+        // Mostrar el timezone del navegador
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        document.getElementById('timezone').textContent = timezone;
+
+        // Mostrar el agente del navegador
+        const agente = navigator.userAgent;
+        document.getElementById('agente').textContent = agente;
+
+        // Mostrar el idioma preferido
+        document.getElementById('idioma').textContent = navigator.language;
+
+        // Mostrar la plataforma
+        document.getElementById('plataforma').textContent = navigator.platform;
+
+        // Mostrar la resolución de ventana
+        function mostrarResolucionVentana() {
+            document.getElementById('resolucion').textContent = window.innerWidth + " x " + window.innerHeight;
+        }
+
+        // Llamar a la función inicialmente para mostrar la resolución actual
+        mostrarResolucionVentana();
+
+        // Actualizar la resolución cuando se cambia el tamaño de la ventana
+        window.addEventListener('resize', mostrarResolucionVentana);
+
+        // Función para generar y enviar el JSON
+        document.getElementById('enviarBtn').addEventListener('click', function() {
+            // Actualizar la fecha y hora antes de enviar
+            actualizarFechaHora();
+
+            // Construir el objeto JSON con los datos a enviar
+            const datos = {
+                fechaHora: document.getElementById('fechaHora').textContent,
+                timezone: document.getElementById('timezone').textContent,
+                agente: document.getElementById('agente').textContent,
+                idioma: document.getElementById('idioma').textContent,
+                plataforma: document.getElementById('plataforma').textContent,
+                resolucion: document.getElementById('resolucion').textContent,
+                userId: document.getElementById('userId').textContent
+            };
+
+            console.log("JSON para enviar:", JSON.stringify(datos));
+
+            // Aquí puedes hacer la llamada a la API usando fetch o XMLHttpRequest
+            // Ejemplo básico con fetch:
+            
+            fetch('http://localhost:5000/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Respuesta de la API:', data);
+            })
+            .catch(error => {
+                console.error('Error al enviar los datos:', error);
+            });
+        });
+
+        // Función para leer los últimos 5 registros desde la API
+        document.getElementById('leerBtn').addEventListener('click', function() {
+            // Llamada a la API para obtener los últimos 5 registros
+            fetch('http://localhost:5000/get')
+                .then(response => response.json())
+                .then(data => {
+                    // Limpiar la tabla antes de agregar nuevos datos
+                    const tablaRegistros = document.getElementById('tablaRegistros');
+                    tablaRegistros.innerHTML = '';
+
+                    // Iterar sobre los datos y agregarlos a la tabla
+                    data.forEach(registro => {
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                            <td class="border px-4 py-2">${registro.fechaHora}</td>
+                            <td class="border px-4 py-2">${registro.userId}</td>
+                            <td class="border px-4 py-2">${registro.agente}</td>
+                            <td class="border px-4 py-2">${registro.plataforma}</td>
+                        `;
+                        tablaRegistros.appendChild(fila);
+                    });
+
+                    // Mostrar el modal con los datos
+                    document.getElementById('modal').classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error al leer los datos:', error);
+                });
+        });
+
+        // Función para cerrar el modal
+        document.getElementById('cerrarModal').addEventListener('click', function() {
+            document.getElementById('modal').classList.add('hidden');
+        });
+
+    </script>
+</body>
+</html>

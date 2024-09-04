@@ -66,6 +66,13 @@
         </div>
     </div>
 
+    <!-- Modal de confirmación de envío -->
+    <div id="modalConfirmacion" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-4 rounded-lg shadow-lg">
+            <p class="text-lg font-bold">¡Enviado!</p>
+        </div>
+    </div>
+
     <script>
         // Funciones para gestionar cookies
         function getCookie(name) {
@@ -130,6 +137,15 @@
         // Actualizar la resolución cuando se cambia el tamaño de la ventana
         window.addEventListener('resize', mostrarResolucionVentana);
 
+        // Función para mostrar el modal de confirmación
+        function mostrarModalConfirmacion() {
+            const modal = document.getElementById('modalConfirmacion');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 1000); // Esconde el modal después de 1 segundo
+        }
+
         // Función para generar y enviar el JSON
         document.getElementById('enviarBtn').addEventListener('click', function() {
             // Actualizar la fecha y hora antes de enviar
@@ -150,8 +166,11 @@
 
             // Aquí puedes hacer la llamada a la API usando fetch o XMLHttpRequest
             // Ejemplo básico con fetch:
+
+            const hostname = window.location.hostname;
+            const apiUrl = `http://${hostname}:5000/send`;
             
-            fetch('http://localhost:5000/send', {
+            fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -161,6 +180,8 @@
             .then(response => response.json())
             .then(data => {
                 console.log('Respuesta de la API:', data);
+                // Mostrar el modal de confirmación después de enviar
+                mostrarModalConfirmacion();
             })
             .catch(error => {
                 console.error('Error al enviar los datos:', error);
@@ -170,7 +191,11 @@
         // Función para leer los últimos 5 registros desde la API
         document.getElementById('leerBtn').addEventListener('click', function() {
             // Llamada a la API para obtener los últimos 5 registros
-            fetch('http://localhost:5000/get')
+
+            const hostname = window.location.hostname;
+            const apiUrl = `http://${hostname}:5000/get`;
+
+            fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
                     // Limpiar la tabla antes de agregar nuevos datos
